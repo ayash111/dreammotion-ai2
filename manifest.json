@@ -1,0 +1,17 @@
+{
+  "name": "DreamMotion AI Video Studio",
+  "short_name": "DreamMotion",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#090d19",
+  "theme_color": "#0b1020",
+  "description": "AI video generator app starter",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

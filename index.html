@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0b1020">
+  <meta name="description" content="DreamMotion AI video creator starter app">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <title>DreamMotion AI</title>
+  <style>
+    :root{color-scheme:dark;--bg:#090d19;--panel:#11182a;--line:#27334e;--text:#f4f6ff;--muted:#aab4cc;--accent:#8b5cf6;--accent2:#22d3ee}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#1b2041 0%,var(--bg) 55%);font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:var(--text);min-height:100vh}
+    .wrap{max-width:900px;margin:auto;padding:22px 16px 48px}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 0 28px}
+    .brand{font-weight:800;font-size:1.15rem;letter-spacing:.2px}.brand span{color:#b8a0ff}.pill{font-size:.78rem;color:#d8ccff;border:1px solid #55418a;border-radius:999px;padding:6px 10px}
+    h1{font-size:clamp(2rem,6vw,3.6rem);line-height:1.04;margin:10px 0 12px;letter-spacing:-1.5px}.grad{background:linear-gradient(90deg,#c4b5fd,#67e8f9);-webkit-background-clip:text;background-clip:text;color:transparent}
+    .sub{color:var(--muted);max-width:650px;line-height:1.6}.panel{background:rgba(17,24,42,.92);border:1px solid var(--line);border-radius:22px;padding:20px;margin-top:24px;box-shadow:0 18px 50px #0003}
+    label{display:block;font-size:.9rem;font-weight:650;margin:14px 0 8px}textarea,select,input{width:100%;background:#0b1120;border:1px solid #34415f;border-radius:12px;color:var(--text);padding:13px;font:inherit;outline:none}textarea{min-height:125px;resize:vertical}textarea:focus,select:focus{border-color:#a78bfa}
+    .examples{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 4px}.example{background:#1b2440;border:1px solid #34415f;color:#dce4ff;border-radius:999px;padding:8px 11px;cursor:pointer;font-size:.82rem}
+    .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.primary{width:100%;border:0;border-radius:13px;padding:14px 18px;background:linear-gradient(90deg,var(--accent),#5b7cfa);color:white;font-size:1rem;font-weight:750;cursor:pointer;margin-top:18px}.primary:disabled{opacity:.55;cursor:wait}
+    .notice{font-size:.85rem;line-height:1.55;color:#c3cde3;background:#0c1324;border:1px solid #2b3958;padding:12px 14px;border-radius:12px;margin-top:14px}
+    .result{margin-top:18px;display:none}.result video{width:100%;max-height:480px;border-radius:14px;background:#05070d}.status{color:#b8c4df;white-space:pre-wrap;line-height:1.5}.foot{color:#7f8aa5;font-size:.8rem;text-align:center;margin-top:25px;line-height:1.6}
+    @media(max-width:560px){.grid{grid-template-columns:1fr}.panel{padding:15px}.top{align-items:flex-start}.pill{font-size:.7rem}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header class="top"><div class="brand">✦ <span>DreamMotion</span> AI</div><div class="pill">VIDEO STUDIO · STARTER</div></header>
+    <p class="pill">TEXT → VIDEO</p>
+    <h1>Turn your ideas into<br><span class="grad">moving stories.</span></h1>
+    <p class="sub">Write a scene, choose your format, and prepare a video-generation job. This starter includes the app interface and a secure server endpoint placeholder; connect a video model to enable real generation.</p>
+    <section class="panel">
+      <label for="prompt">Describe your video</label>
+      <textarea id="prompt" maxlength="1200" placeholder="A cinematic drone shot over snowy Himalayan mountains at sunrise, clouds moving through the valleys, realistic lighting..."></textarea>
+      <div class="examples">
+        <button class="example" data-prompt="A cinematic drone shot over snowy Himalayan mountains at sunrise, clouds moving through the valleys, realistic lighting">Himalayan sunrise</button>
+        <button class="example" data-prompt="A futuristic city at night in the rain, neon reflections on the streets, slow cinematic camera movement">Futuristic city</button>
+        <button class="example" data-prompt="A tiny red fox running through an autumn forest, golden leaves falling, gentle tracking shot">Forest wildlife</button>
+      </div>
+      <div class="grid">
+        <div><label for="ratio">Aspect ratio</label><select id="ratio"><option value="16:9">16:9 · YouTube</option><option value="9:16">9:16 · Reels/Shorts</option><option value="1:1">1:1 · Square</option></select></div>
+        <div><label for="duration">Duration</label><select id="duration"><option value="5">5 seconds</option><option value="8">8 seconds</option><option value="10">10 seconds</option></select></div>
+        <div><label for="quality">Quality preset</label><select id="quality"><option value="standard">Standard</option><option value="high">High (if supported)</option></select></div>
+      </div>
+      <button class="primary" id="generate">Prepare video generation</button>
+      <div class="notice"><strong>Free-start notice:</strong> the interface is functional, but no AI video provider is connected yet. The button will contact <code>/api/generate</code>; until you configure a provider, the app explains what is missing instead of pretending to create a video.</div>
+      <div class="result" id="result"><p class="status" id="status" role="status"></p><video id="video" controls playsinline hidden></video><p><a id="download" hidden download="dreammotion-video.mp4">Download video</a></p></div>
+    </section>
+    <p class="foot">DreamMotion AI is an independent starter project, not affiliated with Seedance. Use only media and prompts you have rights to use. Never put private API keys in browser code.</p>
+  </main>
+  <script>
+    const promptBox=document.querySelector('#prompt'), result=document.querySelector('#result'), statusBox=document.querySelector('#status'), button=document.querySelector('#generate');
+    document.querySelectorAll('.example').forEach(b=>b.addEventListener('click',()=>promptBox.value=b.dataset.prompt));
+    button.addEventListener('click',async()=>{
+      const prompt=promptBox.value.trim();
+      if(prompt.length<8){alert('Please describe your video in at least 8 characters.');return;}
+      result.style.display='block';statusBox.textContent='Sending your request…';button.disabled=true;button.textContent='Please wait…';
+      try{
+        const response=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt,aspectRatio:document.querySelector('#ratio').value,duration:Number(document.querySelector('#duration').value),quality:document.querySelector('#quality').value})});
+        const data=await response.json();
+        if(!response.ok) throw new Error(data.message||'The video provider is not configured yet.');
+        if(data.videoUrl){const v=document.querySelector('#video'),a=document.querySelector('#download');v.src=data.videoUrl;v.hidden=false;a.href=data.videoUrl;a.hidden=false;statusBox.textContent='Video ready!';}
+        else statusBox.textContent=data.message||'Job submitted. Connect a job-status endpoint to retrieve the finished video.';
+      }catch(e){statusBox.textContent='Starter app is working, but real video generation is not connected yet.\n\n'+e.message+'\n\nNext: configure a video model/provider in api/generate.js. Do not add secret API keys to index.html.';}
+      finally{button.disabled=false;button.textContent='Prepare video generation';}
+    });
+    if('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('/sw.js').catch(()=>{});
+  </script>
+</body>
+</html>
